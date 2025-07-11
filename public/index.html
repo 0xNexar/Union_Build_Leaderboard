@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Union Leaderboard</title>
+<style>
+  @font-face {
+    font-family: 'Supermolot';
+    src: url('https://raw.githubusercontent.com/0xNexar/UnionBuild-Checker/631038f2d6d6e4781323010a934561ca0e33d625/fonts/Supermolot-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+  }
+  
+  html, body {
+    margin: 0;
+    padding: 20px;
+    background-color: black;
+    color: white;
+    font-family: 'Supermolot', Arial, sans-serif;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    height: auto !important; 
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 3.5em;
+    margin-bottom: 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    color: white;
+    margin-top: 0;
+  }
+
+  th, td {
+    border: 1px solid #555;
+    padding: 8px;
+    white-space: nowrap; 
+  }
+
+  th {
+    background-color: #222;
+  }
+
+  img {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+  }
+
+  #search-box {
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+  }
+
+  #search-input {
+    font-family: 'Supermolot';
+    font-size: 1em;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: none;
+    outline: none;
+    color: black;
+    background-color: white;
+    width: 250px;
+    max-width: 90vw;
+    box-sizing: border-box;
+  }
+
+  button {
+    margin: 5px;
+    padding: 6px 12px;
+    font-family: 'Supermolot';
+    font-size: 1em;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background-color: #333;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover:not(:disabled) {
+    background-color: #555;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #pagination {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1.1em;
+  }
+
+ 
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 2.5em;
+    }
+
+    #search-input {
+      width: 100%;
+      max-width: 100%;
+      font-size: 1.1em;
+      padding: 8px 12px;
+    }
+
+    button {
+      font-size: 1em;
+      padding: 8px 12px;
+      margin: 4px 3px;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch; 
+    }
+
+    th, td {
+      padding: 6px 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Union Leaderboard</h1>
+<div id="search-box">
+  <input type="text" id="search-input" placeholder="Search username..." />
+  <button id="search-btn">Search</button>
+  <button id="clear-btn" style="display:none;">Clear</button>
+</div>
+<table id="leaderboard">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>User</th>
+      <th>Title</th>
+      <th>Level</th>
+      <th>Total XP</th>
+      <th id="rank-col" style="display: none;">Rank</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="pagination">
+  <button id="prev-btn">Prev</button>
+  <button id="next-btn">Next</button>
+  <span>Page: <span id="page-num">1</span></span>
+</div>
+
+<script>
+  // Your existing JavaScript unchanged
+  const tableBody = document.querySelector('#leaderboard tbody');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const pageNum = document.getElementById('page-num');
+  const searchBtn = document.getElementById('search-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const searchInput = document.getElementById('search-input');
+  const rankCol = document.getElementById('rank-col');
+
+  let currentPage = 0;
+  let isSearching = false;
+
+  async function fetchLeaderboard(page) {
+    const res = await fetch(`/api/leaderboard?page=${page}`);
+    return await res.json();
+  }
+
+  async function fetchSearch(name) {
+    const res = await fetch(`/api/search?name=${encodeURIComponent(name)}`);
+    return await res.json();
+  }
+
+  function render(data) {
+    tableBody.innerHTML = '';
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6">No results found</td></tr>`;
+      return;
+    }
+
+    data.forEach((user, i) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${isSearching ? user.rank : i + 1 + currentPage * 100}</td>
+        <td class="user-cell">
+          <img src="${user.pfp && user.pfp.startsWith('http') ? user.pfp : 'https://via.placeholder.com/40'}" 
+        alt="pfp" 
+        onerror="this.onerror=null; this.src='https://via.placeholder.com/40';">
+          ${user.display_name || 'Unknown'}
+        </td>
+        <td>${user.title || ''}</td>
+        <td>${user.level}</td>
+        <td>${user.total_xp}</td>
+        <td style="display: ${isSearching ? 'table-cell' : 'none'};">${user.rank}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  async function loadPage(page) {
+    if (isSearching) return;
+    const data = await fetchLeaderboard(page);
+    currentPage = page;
+    render(data);
+    pageNum.textContent = page + 1;
+    prevBtn.disabled = currentPage === 0;
+    nextBtn.disabled = data.length < 100;
+    rankCol.style.display = 'none';
+  }
+
+  prevBtn.onclick = () => {
+    if (currentPage > 0) loadPage(currentPage - 1);
+  };
+
+  nextBtn.onclick = () => {
+    loadPage(currentPage + 1);
+  };
+
+  searchBtn.onclick = async () => {
+    const name = searchInput.value.trim();
+    if (!name) return;
+    isSearching = true;
+    const result = await fetchSearch(name);
+    render(result);
+    clearBtn.style.display = 'inline-block';
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    pageNum.textContent = 'Search';
+    rankCol.style.display = 'table-cell';
+  };
+
+  clearBtn.onclick = () => {
+    searchInput.value = '';
+    isSearching = false;
+    clearBtn.style.display = 'none';
+    loadPage(0);
+  };
+
+  loadPage(0);
+</script>
+
+</body>
+</html>
