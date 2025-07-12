@@ -106,6 +106,23 @@
     margin-top: 10px;
     font-size: 1.1em;
   }
+#by-nexar {
+  font-size: 0.3em;
+  vertical-align: center;
+  margin-left: 1px;
+  font-family: Supermolot;
+  font-weight: normal;
+}
+
+#by-nexar a {
+  color: white;
+  text-decoration: none;
+}
+
+#by-nexar a:hover {
+  text-decoration: underline;
+color: blue;
+}
 
  
   @media (max-width: 600px) {
@@ -141,7 +158,9 @@
 </head>
 <body>
 
-<h1>Union Leaderboard</h1>
+<h1>Union Leaderboard
+<span id="by-nexar"><a href="https://x.com/0xNexar" target="_blank">by @0xNexar</a></span>
+</h1>
 <div id="search-box">
   <input type="text" id="search-input" placeholder="Search username..." />
   <button id="search-btn">Search</button>
