@@ -226,7 +226,7 @@ color: blue;
           <img src="${user.pfp && user.pfp.startsWith('http') ? user.pfp : 'https://via.placeholder.com/40'}" 
         alt="pfp" 
         onerror="this.onerror=null; this.src='https://via.placeholder.com/40';">
-          <a href="https://x.com/${user.display_name  'Unknown'}" target="_blank" style="color: inherit; text-decoration: none;">${user.display_name  'Unknown'}</a>
+          ${user.display_name || 'Unknown'}
         </td>
         <td>${user.title || ''}</td>
         <td>${user.level}</td>
