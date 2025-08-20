@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Union Leaderboard</title>
+<title>Union Leaderboard </title>
 <style>
   @font-face {
     font-family: 'Supermolot';
@@ -101,29 +101,42 @@
     cursor: not-allowed;
   }
 
+  /* X Link Styles */
+  .user-cell a {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .user-cell a:hover {
+    color: #00ff88;
+    text-shadow: 0 0 5px #00ff88;
+  }
+
   #pagination {
     text-align: center;
     margin-top: 10px;
     font-size: 1.1em;
   }
-#by-nexar {
-  font-size: 0.3em;
-  vertical-align: center;
-  margin-left: 1px;
-  font-family: Supermolot;
-  font-weight: normal;
-}
 
-#by-nexar a {
-  color: white;
-  text-decoration: none;
-}
+  #by-nexar {
+    font-size: 0.3em;
+    vertical-align: center;
+    margin-left: 1px;
+    font-family: Supermolot;
+    font-weight: normal;
+  }
 
-#by-nexar a:hover {
-  text-decoration: underline;
-color: blue;
-}
+  #by-nexar a {
+    color: white;
+    text-decoration: none;
+  }
 
+  #by-nexar a:hover {
+    text-decoration: underline;
+    color: blue;
+  }
  
   @media (max-width: 600px) {
     h1 {
@@ -187,7 +200,7 @@ color: blue;
 </div>
 
 <script>
-  // Your existing JavaScript unchanged
+  // Enhanced JavaScript with X Links
   const tableBody = document.querySelector('#leaderboard tbody');
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
@@ -201,13 +214,41 @@ color: blue;
   let isSearching = false;
 
   async function fetchLeaderboard(page) {
-    const res = await fetch(`/api/leaderboard?page=${page}`);
-    return await res.json();
+    try {
+      console.log(`Fetching leaderboard page ${page}...`);
+      const res = await fetch(`/api/leaderboard?page=${page}`);
+      console.log('Response status:', res.status);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      console.log('Fetched data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      return [];
+    }
   }
 
   async function fetchSearch(name) {
-    const res = await fetch(`/api/search?name=${encodeURIComponent(name)}`);
-    return await res.json();
+    try {
+      console.log(`Searching for: ${name}`);
+      const res = await fetch(`/api/search?name=${encodeURIComponent(name)}`);
+      console.log('Search response status:', res.status);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      console.log('Search results:', data);
+      return data;
+    } catch (error) {
+      console.error('Error searching:', error);
+      return [];
+    }
   }
 
   function render(data) {
@@ -226,7 +267,7 @@ color: blue;
           <img src="${user.pfp && user.pfp.startsWith('http') ? user.pfp : 'https://via.placeholder.com/40'}" 
         alt="pfp" 
         onerror="this.onerror=null; this.src='https://via.placeholder.com/40';">
-          ${user.display_name || 'Unknown'}
+          <a href="https://x.com/${user.display_name || 'Unknown'}" target="_blank" style="color: inherit; text-decoration: none; cursor: pointer;">${user.display_name || 'Unknown'}</a>
         </td>
         <td>${user.title || ''}</td>
         <td>${user.level}</td>
